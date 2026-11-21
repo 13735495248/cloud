@@ -1,0 +1,7 @@
+服务器: 101.201.236.30
+密码: dbb975154286..
+
+ssh root@101.201.236.30
+
+执行脚本: 
+ssh root@101.201.236.30 'bash -s' < nginx_version_inventory.sh
