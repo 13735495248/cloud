@@ -9,29 +9,37 @@ ssh root@101.201.236.30 "CSV_STDOUT=1 bash -s" < nginx_version_inventory.sh > ng
 .sh里面用column做表格
 .bat兼容性比ps1好,ps1能力更强
 
-2026/11/21 收到 WM2042 通知，Nginx 存在高危漏洞，会带来生产安全风险，需升级至指定安全版本，安全版本详情参考链接： 
 
-http://xxx.xx.xx
 
-现需对科内各 Linux 服务器的 Nginx 版本开展盘点及升级工作，麻烦各位担当协助配合，相关事项说明如下：
+Get-CimInstance Win32_Process -Filter "Name='nginx.exe'" | Select-Object -Unique ExecutablePath | ForEach-Object { $p=$_.ExecutablePath; $v=&$p -V 2>&1; [PSCustomObject]@{ NginxExe=$p; VersionRaw=$v; Version=(($v|Select-String 'nginx/(\d+\.\d+\.\d+)').Matches.Groups[1].Value) } }
 
-1.盘点脚本 
-脚本路径：C:\Users\LENOVO\Desktop\ 阿里云 \cloud\start.bat
-打开文件资源管理器，粘贴上述路径后回车运行，输入对应服务器账号密码，脚本将自动在当前目录输出 CSV 盘点文件。
-脚本将对以下三类 Nginx 进行版本盘点：
-① Linux 宿主机直接安装的 Nginx；
-② Docker 容器内运行的 Nginx；
-③ 本地 Docker 镜像内的 Nginx。
+补充说明: 
+上述自动盘点脚本仅适用于 Linux 系统；
+Windows 系统可能包含 WSL 环境，暂无法通过脚本完成统一盘点，Nginx 版本请采用手动方式盘点。
+如有需要,可参考下述操作盘点：
+1.盘点Windows宿主机Nginx版本,使用Power Shell运行:
+$nginxList = Get-CimInstance Win32_Process -Filter "Name='nginx.exe'" | Select-Object -Unique ExecutablePath
+if (-not $nginxList) {
+    Write-Host "未检测到运行中的Nginx"
+} else {
+    $nginxList | ForEach-Object {
+        $p = $_.ExecutablePath
+        $v = & $p -V 2>&1
+        [PSCustomObject]@{
+            NginxExe    = $p
+            VersionRaw  = $v
+            Version     = (($v | Select-String 'nginx/(\d+\.\d+\.\d+)').Matches.Groups[1].Value)
+        }
+    }
+}
 
-2.升级安装包
-请根据盘点结果，对判定需升级的 Nginx 实施版本升级。 各位担当均为科内骨干，升级步骤不再赘述。
-宿主机 Nginx：RPM 包、源码编译包已存放至共通目录 xxxxx，可自行下载；
-Docker Nginx 镜像：已同步至 Nexus 仓库，使用前请配置仓库源，下载手顺参考：http://xxxx
+2.盘点WSL中Nginx版本:
+请将脚本 xxx 上传到服务器的 WSL 目录中并执行。
 
-3.注意事项
-① 服务器系统版本存在差异，若盘点脚本出现兼容异常，烦请联系 WM2041 董彬彬；
-② 升级前务必备份配置文件及旧版本安装包 / 镜像，便于异常时回滚；
-③ 升级完成后，请确认目标版本生效、业务访问正常。
+手动盘点完成后，请将盘点结果保存至文档，文件命名规范：姓名_服务器ip.txt，并上传至目录：xxx。
 
-盘点及升级全部工作请于【XX 月 XX 日】前完成，建议尽早开展盘点，预留充足升级时间。
+注意:
+Nginx版本分为稳定版和开发版,
+版本号中间段数字为偶数即为稳定版（例：1.28.1），奇数为主线开发版（例：1.31.1）；
+偶数版本统一升级至 1.30.7，奇数版本统一升级至 1.31.9。
  
