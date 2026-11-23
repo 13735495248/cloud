@@ -15,7 +15,7 @@ Get-CimInstance Win32_Process -Filter "Name='nginx.exe'" | Select-Object -Unique
 
 补充说明: 
 上述自动盘点脚本仅适用于 Linux 系统；
-Windows 系统可能包含 WSL 环境，暂无法通过脚本完成统一盘点，Nginx 版本请采用手动方式盘点。
+Windows 系统可能包含 WSL 环境，暂无法通过脚本完成统一盘点，请采用手动方式盘点。
 如有需要,可参考下述操作盘点：
 1.盘点Windows宿主机Nginx版本,使用Power Shell运行:
 $nginxList = Get-CimInstance Win32_Process -Filter "Name='nginx.exe'" | Select-Object -Unique ExecutablePath
